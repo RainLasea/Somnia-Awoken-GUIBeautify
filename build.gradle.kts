@@ -84,6 +84,7 @@ repositories {
         url = uri("https://maven.gofancy.wtf/releases")
     }
     mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
@@ -92,6 +93,7 @@ dependencies {
     koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.7.0")
 
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks {

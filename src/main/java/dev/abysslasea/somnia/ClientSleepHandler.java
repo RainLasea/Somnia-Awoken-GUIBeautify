@@ -1,5 +1,6 @@
 package dev.abysslasea.somnia;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.abysslasea.somnia.capability.CapabilityFatigue;
 import dev.abysslasea.somnia.capability.Fatigue;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.InBedChatScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
@@ -21,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,8 +33,11 @@ import java.util.Deque;
 import java.util.Objects;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import static dev.abysslasea.somnia.util.SideEffectStage.getForFatigue;
+
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
+    public static final ClientSleepHandler HUB_RENDER = new ClientSleepHandler();
 
     private static final DecimalFormat FATIGUE_FORMAT = new DecimalFormat("0.00");
     private static final DecimalFormat MULTIPLIER_FORMAT = new DecimalFormat("0.0");
@@ -78,7 +84,7 @@ public class ClientSleepHandler {
         this.speedValues.clear();
     }
 
-    public void renderGuiOverlay(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+    public void renderGuiTextOverlay(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         if (this.mc.screen != null && !(this.mc.screen instanceof PauseScreen) && (this.mc.player == null || !this.mc.player.isSleeping())) return;
 
         this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
@@ -87,6 +93,18 @@ public class ClientSleepHandler {
                 && (this.mc.player.isSleeping() || SomniaConfig.COMMON.fatigueSideEffects.get() || fatigueAmount <= SomniaConfig.COMMON.minimumFatigueToSleep.get())
             ) {
                 renderFatigueTextDisplay(guiGraphics, fatigueAmount);
+            }
+        });
+    }
+    public void renderGuiHudOverlay(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+        if (this.mc.screen != null && !(this.mc.screen instanceof PauseScreen) && (this.mc.player == null || !this.mc.player.isSleeping())) return;
+
+        this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
+            double fatigueAmount = fatigue.getFatigue();
+            if (SomniaConfig.COMMON.enableFatigue.get() && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui
+                    && (this.mc.player.isSleeping() || SomniaConfig.COMMON.fatigueSideEffects.get() || fatigueAmount <= SomniaConfig.COMMON.minimumFatigueToSleep.get())
+            ) {
+                renderFatigueHudDisplay(guiGraphics, fatigueAmount);
             }
         });
     }
@@ -124,18 +142,28 @@ public class ClientSleepHandler {
         }
     }
 
-//    private void renderFatigueHudDisplay(GuiGraphics guigraphics, double fatigue) {
-//        FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueHudDisplayPos.get();
-//        if (pos != FatigueDisplayPosition.NONE) {
-//            String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
-//                    ? SideEffectStage.getSideEffectStageDescription(fatigue)
-//                    : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
-//            int width = this.mc.font.width(str);
-//            int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
-//            int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
-//            guigraphics.drawString(this.mc.font, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE, false);
-//        }
-//    }
+    private void renderFatigueHudDisplay(GuiGraphics guigraphics, double fatigue) {
+        int desc = getForFatigue(fatigue);
+        ResourceLocation SIDE_EFFECT = new ResourceLocation(SomniaAwoken.MODID, "textures/gui/side_effect_" + desc + ".png");
+        FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueHudDisplayPos.get();
+        if (pos != FatigueDisplayPosition.NONE) {
+            renderFatigueHud(guiGraphics, sideEffect);
+        }
+    }
+
+    public static void renderFatigueHud(GuiGraphics guiGraphics, ResourceLocation sideEffect) {
+        int x = screenWidth / 2;
+        int y = screenHeight;
+
+        RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, SIDE_EFFECT);  // 使用传入的动态资源
+
+        for (int i = 0; i < 10; i++) {
+            guiGraphics.blit(SIDE_EFFECT, x + 98, y - 22, 0, 0, 22, 22, 22, 22);
+        }
+    }
+
 
     private void renderSleepOverlay(GuiGraphics guiGraphics, Screen screen, Fatigue fatigue, double currentSpeed) {
         long wakeTime = fatigue.getWakeTime();

@@ -3,7 +3,6 @@ package dev.abysslasea.somnia;
 import dev.abysslasea.somnia.api.SomniaAPI;
 import dev.abysslasea.somnia.capability.CapabilityFatigue;
 import dev.abysslasea.somnia.compat.Compat;
-import dev.abysslasea.somnia.gui.PlayerFatigueHub;
 import dev.abysslasea.somnia.network.SomniaNetwork;
 import dev.abysslasea.somnia.network.client.FatigueUpdatePacket;
 import dev.abysslasea.somnia.network.client.OpenGUIPacket;
