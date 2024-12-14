@@ -31,7 +31,7 @@ fun transformTickChunk(method: MethodNode) {
     }
     target.insertAfter {
         +L["skip"]
-        invokestatic("dev/su5ed/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
+        invokestatic("dev/abysslasea/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
     }
 }
 
@@ -50,6 +50,6 @@ fun transformTickChunks(method: MethodNode) {
     target.insertAfter {
         +L["skip"]
         getfield("net/minecraft/server/level/ServerChunkCache", mapFieldName("f_8329_"), "net/minecraft/server/level/ServerLevel") // level
-        invokestatic("dev/su5ed/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
+        invokestatic("dev/abysslasea/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
     }
 }
