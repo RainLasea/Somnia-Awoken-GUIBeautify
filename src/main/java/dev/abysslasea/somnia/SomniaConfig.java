@@ -44,7 +44,7 @@ public final class SomniaConfig {
             builder.push("fatigue");
             fatigueHudDisplayPos = builder
                     .comment("The fatigue HUD counter's position")
-                    .defineEnum("fatigueHudDisplayPos", FatigueDisplayPosition.NONE);
+                    .defineEnum("fatigueHudDisplayPos", FatigueDisplayPosition.BOTTOM_RIGHT);
             fatigueTextDisplayPos = builder
                 .comment("The fatigue Text counter's position")
                 .defineEnum("fatigueTextDisplayPos", FatigueDisplayPosition.NONE);

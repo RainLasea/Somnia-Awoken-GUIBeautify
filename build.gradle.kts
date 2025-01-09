@@ -93,7 +93,7 @@ dependencies {
     koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.7.0")
 
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
-    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0")
 }
 
 tasks {

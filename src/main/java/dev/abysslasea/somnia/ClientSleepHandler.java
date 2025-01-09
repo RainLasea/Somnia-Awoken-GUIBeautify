@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static dev.abysslasea.somnia.util.SideEffectStage.getForFatigue;
+import static dev.abysslasea.somnia.util.SideEffectStage.getSideEffectStages;
 
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
@@ -104,7 +105,7 @@ public class ClientSleepHandler {
             if (SomniaConfig.COMMON.enableFatigue.get() && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui
                     && (this.mc.player.isSleeping() || SomniaConfig.COMMON.fatigueSideEffects.get() || fatigueAmount <= SomniaConfig.COMMON.minimumFatigueToSleep.get())
             ) {
-                renderFatigueHudDisplay(guiGraphics, fatigueAmount);
+                renderFatigueHudDisplay(guiGraphics, fatigueAmount, screenWidth, screenHeight);
             }
         });
     }
@@ -141,26 +142,24 @@ public class ClientSleepHandler {
             guigraphics.drawString(this.mc.font, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE, false);
         }
     }
-
-    private void renderFatigueHudDisplay(GuiGraphics guigraphics, double fatigue) {
-        int desc = getForFatigue(fatigue);
-        ResourceLocation SIDE_EFFECT = new ResourceLocation(SomniaAwoken.MODID, "textures/gui/side_effect_" + desc + ".png");
+    private void renderFatigueHudDisplay(GuiGraphics guigraphics, double fatigue, int screenWidth, int screenHeight) {
+        int dosc = getForFatigue(fatigue);
+        ResourceLocation sideEffect = new ResourceLocation(SomniaAwoken.MODID, "textures/gui/side_effect_" + dosc + ".png");
         FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueHudDisplayPos.get();
         if (pos != FatigueDisplayPosition.NONE) {
-            renderFatigueHud(guiGraphics, sideEffect);
+            renderFatigueHud(guigraphics, sideEffect, screenWidth, screenHeight);
         }
     }
-
-    public static void renderFatigueHud(GuiGraphics guiGraphics, ResourceLocation sideEffect) {
+    public static void renderFatigueHud(GuiGraphics guiGraphics, ResourceLocation sideEffect, int screenWidth, int screenHeight) {
         int x = screenWidth / 2;
         int y = screenHeight;
 
         RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, SIDE_EFFECT);  // 使用传入的动态资源
+        RenderSystem.setShaderTexture(0, sideEffect);  // 使用传入的动态资源
 
         for (int i = 0; i < 10; i++) {
-            guiGraphics.blit(SIDE_EFFECT, x + 98, y - 22, 0, 0, 22, 22, 22, 22);
+            guiGraphics.blit(sideEffect, x + 98, y - 22, 0, 0, 22, 22, 22, 22);
         }
     }
 
